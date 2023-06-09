@@ -5,11 +5,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.ecom.ecommerce.models.User;
+import com.ecom.ecommerce.service.UserAuthService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -22,6 +24,9 @@ public class JwtUtil implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -7206187061330172174L;
+	
+	@Autowired
+	private UserAuthService userAuthService;
 
 	@Value("${jwt.secret}")
 	private String secret;
@@ -29,7 +34,9 @@ public class JwtUtil implements Serializable {
 	private static final long EXPIRATION_TIME = 10 * 60 * 60;
 
 	public User getUser(final String token) {
-		return null;
+		String loadUserNameFromToken = loadUserNameFromToken(token);
+		final User user = (User) userAuthService.loadUserByUsername(loadUserNameFromToken);
+		return user;
 	}
 
 	public String generateToken(UserDetails userDetails) {

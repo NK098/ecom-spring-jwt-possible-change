@@ -43,16 +43,19 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()
 			// dont authenticate this particular request
-			.authorizeRequests().antMatchers("/api/public/**").permitAll()
-			.antMatchers("/h2-console/**").permitAll()
-			// all other requests need to be authenticated
-			.anyRequest().authenticated()
+			.authorizeRequests()
+				.antMatchers("/api/public/**").permitAll()
+				.antMatchers("/h2-console/**").permitAll()
+				// all other requests need to be authenticated
+				.anyRequest().authenticated()
 			.and()
 			// make sure we use stateless session; session won't be used to
 			// store user's state.
-			.exceptionHandling().authenticationEntryPoint(apiAuthenticationEntryPoint)
-			.and()
-			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			.exceptionHandling()
+				.authenticationEntryPoint(apiAuthenticationEntryPoint)
+				.and()
+			.sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		//To solve the /h2-console blank page issue
 		http.headers().frameOptions().disable();
 		// Add a filter to validate the tokens with every request

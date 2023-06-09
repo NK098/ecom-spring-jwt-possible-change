@@ -11,12 +11,12 @@ class RoleGrantedAuthority implements GrantedAuthority {
 	String role;
 
 	public RoleGrantedAuthority(String role) {
-		this.role = "ROLE_"+role;
+		this.role = "ROLE_" + role;
 	}
 
 	@Override
 	public String getAuthority() {
 		return this.role;
 	}
-	
+
 }

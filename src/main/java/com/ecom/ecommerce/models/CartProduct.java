@@ -11,21 +11,25 @@ import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "cart_id", "product_id"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "cart_id", "product_id" }))
 @Entity
 public class CartProduct {
+
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private Integer cpId;
+
 	@ManyToOne()
 	@JoinColumn(name = "cart_id", referencedColumnName = "cartId")
 	@JsonIgnore
 	private Cart cart;
+
 	@ManyToOne()
 	@JoinColumn(name = "product_id", referencedColumnName = "productId")
 	private Product product;
-	private Integer quantity = 1; 
-	
+
+	private Integer quantity = 1;
+
 	public CartProduct() {
 		super();
 	}
@@ -71,7 +75,8 @@ public class CartProduct {
 
 	@Override
 	public String toString() {
-		return "CartProduct [cpId=" + cpId + ", cart=" + cart.getCartId() + ", product=" + product.getProductId() + ", quantity=" + quantity + "]";
+		return "CartProduct [cpId=" + cpId + ", cart=" + cart.getCartId() + ", product=" + product.getProductId()
+				+ ", quantity=" + quantity + "]";
 	}
-	
+
 }

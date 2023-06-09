@@ -6,17 +6,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 public class Category {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
-	@JsonIgnore
-	private Integer categoryId;
+	private String categoryId;
+
 	@Column(unique = true)
 	private String categoryName;
-	
+
 	public Category() {
 		super();
 	}
@@ -26,11 +24,11 @@ public class Category {
 		this.categoryName = categoryName;
 	}
 
-	public Integer getCategoryId() {
+	public String getCategoryId() {
 		return categoryId;
 	}
 
-	public void setCategoryId(Integer categoryId) {
+	public void setCategoryId(String categoryId) {
 		this.categoryId = categoryId;
 	}
 
@@ -46,5 +44,5 @@ public class Category {
 	public String toString() {
 		return "Category [categoryId=" + categoryId + ", categoryName=" + categoryName + "]";
 	}
-	
+
 }

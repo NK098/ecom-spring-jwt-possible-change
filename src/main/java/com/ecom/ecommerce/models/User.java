@@ -20,15 +20,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-public class User implements UserDetails{
+public class User implements UserDetails {
+
 	private static final long serialVersionUID = 5536306799835655715L;
+
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private Integer userId;
-	@Column (unique = true)
+
+	@Column(unique = true)
 	private String username;
+
 	private String password;
-	
+
 	@ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
 	@CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
 	@Enumerated(EnumType.STRING)
@@ -107,5 +111,5 @@ public class User implements UserDetails{
 	public boolean isEnabled() {
 		return true;
 	}
-	
+
 }

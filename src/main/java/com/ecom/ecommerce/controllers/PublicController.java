@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecom.ecommerce.config.JwtUtil;
-import com.ecom.ecommerce.models.JwtRequestModel;
 import com.ecom.ecommerce.models.Product;
+import com.ecom.ecommerce.models.User;
 import com.ecom.ecommerce.repo.ProductRepo;
 import com.ecom.ecommerce.service.UserAuthService;
 
@@ -45,17 +45,17 @@ public class PublicController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody JwtRequestModel jwtRequest) throws Exception {
+	public ResponseEntity<?> login(@RequestBody User user) throws Exception {
 		try {
-			authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
+			authenticationManager
+					.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 		} catch (DisabledException e) {
 			throw new Exception("USER_DISABLED", e);
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
 
-		final UserDetails userDetails = authService.loadUserByUsername(jwtRequest.getUsername());
+		final UserDetails userDetails = authService.loadUserByUsername(user.getUsername());
 		final String token = jwtUtil.generateToken(userDetails);
 		return ResponseEntity.ok(token);
 	}

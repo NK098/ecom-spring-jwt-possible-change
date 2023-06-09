@@ -18,12 +18,13 @@ public class Cart {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private Integer cartId;
-	private Double totalAmount;
 	
+	private Double totalAmount;
+
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private User user;
-	
+
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "cart")
 	private List<CartProduct> cartProducts;
 
@@ -73,10 +74,10 @@ public class Cart {
 
 	@Override
 	public String toString() {
-		return "Cart [cartId=" + cartId + ", totalAmount=" + totalAmount + ", user=" + user.getUserId() + ", cartProducts="
-				+ cartProducts + "]";
+		return "Cart [cartId=" + cartId + ", totalAmount=" + totalAmount + ", user=" + user.getUserId()
+				+ ", cartProducts=" + cartProducts + "]";
 	}
-	
+
 	public void updateTotalAmount(Double price) {
 		this.totalAmount += price;
 	}
