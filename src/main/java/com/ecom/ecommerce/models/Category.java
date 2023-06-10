@@ -6,10 +6,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Category {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
+	@JsonIgnore
 	private String categoryId;
 
 	@Column(unique = true)

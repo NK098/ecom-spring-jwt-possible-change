@@ -23,15 +23,11 @@ import com.ecom.ecommerce.models.User;
 import com.ecom.ecommerce.repo.CartProductRepo;
 import com.ecom.ecommerce.repo.CartRepo;
 import com.ecom.ecommerce.repo.ProductRepo;
-import com.ecom.ecommerce.service.UserAuthService;
 
 @RestController
 @PreAuthorize("hasRole('ROLE_CONSUMER')")
 @RequestMapping("/api/auth/consumer")
 public class ConsumerController {
-
-	@Autowired
-	private UserAuthService userAuthService;
 
 	@Autowired
 	private JwtUtil jwtUtil;
@@ -46,8 +42,8 @@ public class ConsumerController {
 	CartProductRepo cartProductRepo;
 
 	@GetMapping("/cart")
-	public ResponseEntity<Object> getCart(@RequestHeader("JWT") String jwt) {
-		User user = getUserFromJWT(jwt);
+	public ResponseEntity<Object> getCart(@RequestHeader("JWT") String token) {
+		User user = jwtUtil.getUser(token);
 		Optional<Cart> findByUserUsername = cartRepo.findByUserUsername(user.getUsername());
 		Cart cart = null;
 		if (findByUserUsername.isPresent()) {
@@ -57,11 +53,17 @@ public class ConsumerController {
 	}
 
 	@PostMapping("/cart")
-	public ResponseEntity<Object> postCart(@RequestHeader("JWT") String jwt, @RequestBody Product product) {
-		User user = getUserFromJWT(jwt);
+	public ResponseEntity<Object> postCart(@RequestHeader("JWT") String token, @RequestBody Product product) {
+		User user = jwtUtil.getUser(token);
+		product.setSeller(user);
 		// Find the user's cart
-		Cart cart = cartRepo.findByUserUsername(user.getUsername()).orElse(new Cart());
-
+		Cart cart = null;
+		Optional<Cart> findByUserUsername = cartRepo.findByUserUsername(user.getUsername());
+		if (findByUserUsername.isPresent()) {
+			cart = findByUserUsername.get();
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 		// Find the product to be added to the cart
 		Product existingProduct = productRepo.findById(product.getProductId()).orElse(null);
 		if (existingProduct == null) {
@@ -87,13 +89,12 @@ public class ConsumerController {
 		// Save the cart and the cart product
 		cartRepo.save(cart);
 		cartProductRepo.save(cartProduct);
-//		productRepo.save(product);
-		return ResponseEntity.ok(cartRepo.findAll());
+		return ResponseEntity.ok(cartRepo.findById(cart.getUser().getUserId()));
 	}
 
 	@PutMapping("/cart")
-	public ResponseEntity<Object> putCart(@RequestHeader("JWT") String jwt, @RequestBody CartProduct cartProduct) {
-		User user = getUserFromJWT(jwt);
+	public ResponseEntity<Object> putCart(@RequestHeader("JWT") String token, @RequestBody CartProduct cartProduct) {
+		User user = jwtUtil.getUser(token);
 		// Retrieve the user's cart
 		Optional<Cart> optionalCart = cartRepo.findByUserUsername(user.getUsername());
 
@@ -116,23 +117,24 @@ public class ConsumerController {
 					cart.updateTotalAmount(-existingCartProduct.getProduct().getPrice());
 				}
 			} else {
-				// If the product is not in the cart, add it with the supplied quantity
-				if (!optionalExistingCartProduct.isPresent()) {
-					cartProduct.setCart(cart);
-					cart.getCartProducts().add(cartProduct);
-					cart.updateTotalAmount(product.getPrice() * cartProduct.getQuantity());
-				} else {
+				if (optionalExistingCartProduct.isPresent()) {
 					// If the product is already in the cart, update its quantity
 					CartProduct existingCartProduct = optionalExistingCartProduct.get();
 					cart.updateTotalAmount(
 							(cartProduct.getQuantity() - existingCartProduct.getQuantity()) * product.getPrice());
 					existingCartProduct.setQuantity(cartProduct.getQuantity());
+					cartProductRepo.save(existingCartProduct); // Save the updated existingCartProduct
+				} else {
+					// If the product is not in the cart, add it with the supplied quantity
+					cartProduct.setCart(cart);
+					cart.getCartProducts().add(cartProduct);
+					cart.updateTotalAmount(product.getPrice() * cartProduct.getQuantity());
+					cartProductRepo.save(cartProduct); // Save the new cartProduct
 				}
 			}
 
-			// Save the updated cart and cart product in the repository
+			// Save the updated cart in the repository
 			cartRepo.save(cart);
-			cartProductRepo.save(cartProduct);
 
 			return ResponseEntity.ok(cart);
 		} else {
@@ -143,8 +145,8 @@ public class ConsumerController {
 	}
 
 	@DeleteMapping("/cart")
-	public ResponseEntity<Object> deleteCart(@RequestHeader("JWT") String jwt, @RequestBody Product product) {
-		User user = getUserFromJWT(jwt);
+	public ResponseEntity<Object> deleteCart(@RequestHeader("JWT") String token, @RequestBody Product product) {
+		User user = jwtUtil.getUser(token);
 		// Retrieve the user's cart
 		Optional<Cart> optionalCart = cartRepo.findByUserUsername(user.getUsername());
 
@@ -177,11 +179,5 @@ public class ConsumerController {
 			// response)
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
-	}
-
-	private User getUserFromJWT(String jwt) {
-		String loadUserNameFromToken = jwtUtil.loadUserNameFromToken(jwt);
-		final User user = (User) userAuthService.loadUserByUsername(loadUserNameFromToken);
-		return user;
 	}
 }

@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Product {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +21,7 @@ public class Product {
 	
 	@ManyToOne()
 	@JoinColumn(name = "seller_id", referencedColumnName = "userId", updatable = false)
+	@JsonIgnore
 	private User seller;
 
 	@ManyToOne()

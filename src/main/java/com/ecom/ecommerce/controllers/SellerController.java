@@ -20,8 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.ecom.ecommerce.config.JwtUtil;
+import com.ecom.ecommerce.models.Category;
 import com.ecom.ecommerce.models.Product;
 import com.ecom.ecommerce.models.User;
+import com.ecom.ecommerce.repo.CategoryRepo;
 import com.ecom.ecommerce.repo.ProductRepo;
 
 @RestController
@@ -31,20 +33,40 @@ public class SellerController {
 
 	@Autowired
 	ProductRepo productRepo;
+	
+	@Autowired
+	CategoryRepo categoryRepo;
 
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	// Endpoint to create a new product
 	@PostMapping("/product")
 	public ResponseEntity<Object> postProduct(@RequestHeader("JWT") String token, @RequestBody Product product) {
 		User user = jwtUtil.getUser(token);
 		product.setSeller(user);
-		Product savedProduct = productRepo.save(product);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(savedProduct.getProductId()).toUri();
-		return ResponseEntity.created(uri).build();
+		
+	    // Save the category if it doesn't exist in the database
+	    String categoryName = product.getCategory().getCategoryName();
+		Optional<Category> findByCategoryName = categoryRepo.findByCategoryName(categoryName);
+	    if(findByCategoryName.isPresent()) {
+		    // Set the saved category in the product
+		    product.setCategory(findByCategoryName.get());
+	    }
+	    
+	    // Save the product
+	    Product savedProduct = productRepo.save(product);
+	    
+	    // Create the URI for the saved product
+	    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+	            .path("/{id}")
+	            .buildAndExpand(savedProduct.getProductId())
+	            .toUri();
+	    
+	    return ResponseEntity.created(location).build();
 	}
 
+	// Endpoint to get all products for a seller
 	@GetMapping("/product")
 	public ResponseEntity<Object> getAllProducts(@RequestHeader("JWT") String token) {
 		User user = jwtUtil.getUser(token);
@@ -52,6 +74,7 @@ public class SellerController {
 		return ResponseEntity.ok(findBySellerUserId);
 	}
 
+	// Endpoint to get a specific product for a seller
 	@GetMapping("/product/{productId}")
 	public ResponseEntity<Object> getProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
 		User user = jwtUtil.getUser(token);
@@ -63,20 +86,33 @@ public class SellerController {
 		return ResponseEntity.ok(findBySellerUserIdAndProductId);
 	}
 
+	// Endpoint to update a product
 	@PutMapping("/product")
 	public ResponseEntity<Object> putProduct(@RequestHeader("JWT") String token, @RequestBody Product product) {
-		Optional<Product> findById = productRepo.findById(product.getProductId());
-		if (findById.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		productRepo.save(product);
-		return ResponseEntity.ok().build();
+	    Optional<Product> findById = productRepo.findById(product.getProductId());
+	    if (findById.isEmpty()) {
+	        return ResponseEntity.notFound().build();
+	    }
+	    
+	    // Save the category if it doesn't exist in the database
+	    String categoryName = product.getCategory().getCategoryName();
+	    Optional<Category> findByCategoryName = categoryRepo.findByCategoryName(categoryName);
+	    if (findByCategoryName.isEmpty()) {
+	        Category savedCategory = categoryRepo.save(product.getCategory());
+	        product.setCategory(savedCategory);
+	    } else {
+	        product.setCategory(findByCategoryName.get());
+	    }
+
+	    productRepo.save(product);
+	    return ResponseEntity.ok().build();
 	}
 
-	// TODO
+	// Endpoint to delete a product
 	@DeleteMapping("/product/{productId}")
 	public ResponseEntity<Object> deleteProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
 		User user = jwtUtil.getUser(token);
+		
 		// Check if the product exists and is owned by the seller
 		Optional<Product> productOptional = productRepo.findBySellerUserIdAndProductId(user.getUserId(), productId);
 		if (productOptional.isPresent()) {
