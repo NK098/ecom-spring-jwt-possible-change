@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.ecom.ecommerce.models.User;
 import com.ecom.ecommerce.repo.UserRepo;
 
-@Repository
+@Service
 public class UserAuthService implements UserDetailsService{
 	@Autowired
 	private UserRepo userRepo;

@@ -41,21 +41,32 @@ public class ConsumerController {
 	@Autowired
 	CartProductRepo cartProductRepo;
 
+	// Endpoint to get the user's cart
 	@GetMapping("/cart")
 	public ResponseEntity<Object> getCart(@RequestHeader("JWT") String token) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
+		
+		// Find the user's cart
 		Optional<Cart> findByUserUsername = cartRepo.findByUserUsername(user.getUsername());
 		Cart cart = null;
 		if (findByUserUsername.isPresent()) {
 			cart = findByUserUsername.get();
 		}
+		
+		// Return the cart in the response
 		return ResponseEntity.ok(cart);
 	}
 
+	// Endpoint to add a product to the user's cart
 	@PostMapping("/cart")
 	public ResponseEntity<Object> postCart(@RequestHeader("JWT") String token, @RequestBody Product product) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
+		
+		// Set the seller of the product as the authenticated user
 		product.setSeller(user);
+		
 		// Find the user's cart
 		Cart cart = null;
 		Optional<Cart> findByUserUsername = cartRepo.findByUserUsername(user.getUsername());
@@ -64,6 +75,7 @@ public class ConsumerController {
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
+		
 		// Find the product to be added to the cart
 		Product existingProduct = productRepo.findById(product.getProductId()).orElse(null);
 		if (existingProduct == null) {
@@ -89,12 +101,16 @@ public class ConsumerController {
 		// Save the cart and the cart product
 		cartRepo.save(cart);
 		cartProductRepo.save(cartProduct);
+		
 		return ResponseEntity.ok(cartRepo.findById(cart.getUser().getUserId()));
 	}
 
+	// Endpoint to update the quantity of a product in the user's cart
 	@PutMapping("/cart")
 	public ResponseEntity<Object> putCart(@RequestHeader("JWT") String token, @RequestBody CartProduct cartProduct) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
+		
 		// Retrieve the user's cart
 		Optional<Cart> optionalCart = cartRepo.findByUserUsername(user.getUsername());
 
@@ -136,6 +152,7 @@ public class ConsumerController {
 			// Save the updated cart in the repository
 			cartRepo.save(cart);
 
+			// Return the updated cart in the response
 			return ResponseEntity.ok(cart);
 		} else {
 			// Handle case where user doesn't have a cart (possibly return an error
@@ -144,9 +161,12 @@ public class ConsumerController {
 		}
 	}
 
+	// Endpoint to remove a product from the user's cart
 	@DeleteMapping("/cart")
 	public ResponseEntity<Object> deleteCart(@RequestHeader("JWT") String token, @RequestBody Product product) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
+		
 		// Retrieve the user's cart
 		Optional<Cart> optionalCart = cartRepo.findByUserUsername(user.getUsername());
 
@@ -168,6 +188,7 @@ public class ConsumerController {
 				// Save the updated cart in the repository
 				cartRepo.save(cart);
 
+				// Return a success response
 				return ResponseEntity.ok().build();
 			} else {
 				// Handle case where the product is not found in the cart (possibly return an

@@ -1,6 +1,7 @@
 package com.ecom.ecommerce.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,12 +31,16 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+	
+	// Configure web security to ignore certain paths	
 //	@Override
-//	public void configure(WebSecurity token) throws Exception {
+//	public void configure(WebSecurity web) throws Exception {
+//		web.ignoring().antMatchers("/api/public/**", "/h2-console/**");
 //	}
 
 	@Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		// Configure authentication manager to use UserAuthService
 		auth.userDetailsService(userAuthService).passwordEncoder(getPasswordEncoder());
 	}
 
@@ -56,20 +61,29 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
 				.and()
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		
 		//To solve the /h2-console blank page issue
 		http.headers().frameOptions().disable();
+		
 		// Add a filter to validate the tokens with every request
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 
-//	@Bean
-//	public RegistrationBean jwtAuthFilterRegister(JwtAuthenticationFilter filter) {
-//		return null;
-//	}
+	//This method is optional and can be used to register custom filters.
+	@Bean
+	public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthFilterRegister(JwtAuthenticationFilter filter) {
+	    // Register JwtAuthenticationFilter as a filter
+	    FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>(filter);
+	    registrationBean.setOrder(1); // Set the order of the filter
+	    registrationBean.addUrlPatterns("/api/auth/**"); // Set the URL patterns to which the filter should be applied
+	    return registrationBean;
+	}
+
 
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() throws Exception {
+		// Override authenticationManagerBean to expose the authentication manager bean
 		return super.authenticationManagerBean();
 	}
 

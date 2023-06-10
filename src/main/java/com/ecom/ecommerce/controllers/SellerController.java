@@ -43,6 +43,7 @@ public class SellerController {
 	// Endpoint to create a new product
 	@PostMapping("/product")
 	public ResponseEntity<Object> postProduct(@RequestHeader("JWT") String token, @RequestBody Product product) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
 		product.setSeller(user);
 		
@@ -69,6 +70,7 @@ public class SellerController {
 	// Endpoint to get all products for a seller
 	@GetMapping("/product")
 	public ResponseEntity<Object> getAllProducts(@RequestHeader("JWT") String token) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
 		List<Product> findBySellerUserId = productRepo.findBySellerUserId(user.getUserId());
 		return ResponseEntity.ok(findBySellerUserId);
@@ -77,6 +79,7 @@ public class SellerController {
 	// Endpoint to get a specific product for a seller
 	@GetMapping("/product/{productId}")
 	public ResponseEntity<Object> getProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
 		Optional<Product> findBySellerUserIdAndProductId = productRepo.findBySellerUserIdAndProductId(user.getUserId(),
 				productId);
@@ -111,6 +114,7 @@ public class SellerController {
 	// Endpoint to delete a product
 	@DeleteMapping("/product/{productId}")
 	public ResponseEntity<Object> deleteProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
+		// Get the user from the JWT token
 		User user = jwtUtil.getUser(token);
 		
 		// Check if the product exists and is owned by the seller

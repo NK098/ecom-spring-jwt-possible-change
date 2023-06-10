@@ -30,7 +30,7 @@ public class PublicController {
 	private AuthenticationManager authenticationManager;
 
 	@Autowired
-	private UserAuthService authService;
+	private UserAuthService userAuthService;
 
 	@Autowired
 	private JwtUtil jwtUtil;
@@ -38,25 +38,34 @@ public class PublicController {
 	@Autowired
 	ProductRepo productRepo;
 
+	// Endpoint to search for products based on a keyword
 	@GetMapping("/product/search")
 	public List<Product> getProducts(@RequestParam(required = true) String keyword) {
 		return productRepo.findByProductNameContainingIgnoreCaseOrCategoryCategoryNameContainingIgnoreCase(keyword,
 				keyword);
 	}
 
+	// Endpoint for user login
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody User user) throws Exception {
+		// Authenticating the user using the AuthenticationManager
 		try {
-			authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+					user.getUsername(), user.getPassword());
+			authenticationManager.authenticate(authentication);
 		} catch (DisabledException e) {
 			throw new Exception("USER_DISABLED", e);
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
 
-		final UserDetails userDetails = authService.loadUserByUsername(user.getUsername());
+		// Loading the UserDetails for the authenticated user
+		final UserDetails userDetails = userAuthService.loadUserByUsername(user.getUsername());
+
+		// Generating a JWT token using the JwtUtil
 		final String token = jwtUtil.generateToken(userDetails);
+
+		// Returning the generated token in the response
 		return ResponseEntity.ok(token);
 	}
 
