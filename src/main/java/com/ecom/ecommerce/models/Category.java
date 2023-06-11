@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Category {
+	
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	@JsonIgnore

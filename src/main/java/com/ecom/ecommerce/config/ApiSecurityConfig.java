@@ -54,11 +54,11 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
 				// all other requests need to be authenticated
 				.anyRequest().authenticated()
 			.and()
-			// make sure we use stateless session; session won't be used to
-			// store user's state.
 			.exceptionHandling()
 				.authenticationEntryPoint(apiAuthenticationEntryPoint)
-				.and()
+			.and()
+			// make sure we use stateless session; session won't be used to
+			// store user's state.
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		

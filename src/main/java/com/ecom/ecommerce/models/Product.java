@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Product {
+	
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Id
 	private Integer productId;

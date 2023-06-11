@@ -1,6 +1,7 @@
 package com.ecom.ecommerce.models;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,15 @@ public class User implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return this.roles.stream().map(r -> new RoleGrantedAuthority(r.name())).collect(Collectors.toList());
+		List<RoleGrantedAuthority> authorities = this.roles.stream().map(r -> new RoleGrantedAuthority(r.name()))
+				.collect(Collectors.toList());
+		return authorities;
+		//For reference
+//		List<GrantedAuthority> authorities = new ArrayList<>();
+//	    for (Role role : this.roles) {
+//	        authorities.add(new RoleGrantedAuthority(role.name()));
+//	    }
+//	    return authorities;
 	}
 
 	@Override

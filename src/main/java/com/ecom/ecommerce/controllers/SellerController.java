@@ -40,6 +40,28 @@ public class SellerController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	// Endpoint to get all products for a seller
+	@GetMapping("/product")
+	public ResponseEntity<Object> getAllProducts(@RequestHeader("JWT") String token) {
+		// Get the user from the JWT token
+		User user = jwtUtil.getUser(token);
+		List<Product> findBySellerUserId = productRepo.findBySellerUserId(user.getUserId());
+		return ResponseEntity.ok(findBySellerUserId);
+	}
+
+	// Endpoint to get a specific product for a seller
+	@GetMapping("/product/{productId}")
+	public ResponseEntity<Object> getProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
+		// Get the user from the JWT token
+		User user = jwtUtil.getUser(token);
+		Optional<Product> findBySellerUserIdAndProductId = productRepo.findBySellerUserIdAndProductId(user.getUserId(),
+				productId);
+		if (findBySellerUserIdAndProductId.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(findBySellerUserIdAndProductId);
+	}
+	
 	// Endpoint to create a new product
 	@PostMapping("/product")
 	public ResponseEntity<Object> postProduct(@RequestHeader("JWT") String token, @RequestBody Product product) {
@@ -65,28 +87,6 @@ public class SellerController {
 	            .toUri();
 	    
 	    return ResponseEntity.created(location).build();
-	}
-
-	// Endpoint to get all products for a seller
-	@GetMapping("/product")
-	public ResponseEntity<Object> getAllProducts(@RequestHeader("JWT") String token) {
-		// Get the user from the JWT token
-		User user = jwtUtil.getUser(token);
-		List<Product> findBySellerUserId = productRepo.findBySellerUserId(user.getUserId());
-		return ResponseEntity.ok(findBySellerUserId);
-	}
-
-	// Endpoint to get a specific product for a seller
-	@GetMapping("/product/{productId}")
-	public ResponseEntity<Object> getProduct(@RequestHeader("JWT") String token, @PathVariable Integer productId) {
-		// Get the user from the JWT token
-		User user = jwtUtil.getUser(token);
-		Optional<Product> findBySellerUserIdAndProductId = productRepo.findBySellerUserIdAndProductId(user.getUserId(),
-				productId);
-		if (findBySellerUserIdAndProductId.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		return ResponseEntity.ok(findBySellerUserIdAndProductId);
 	}
 
 	// Endpoint to update a product
